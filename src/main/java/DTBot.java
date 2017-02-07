@@ -112,8 +112,8 @@ public class DTBot extends ListenerAdapter{
                 else
                     channel.sendMessage("Usage: -dice [number]").queue();
                 break;
-            case "-pong": // Test command.
-                channel.sendMessage("ping").queue();
+            case "-ping": // Test command.
+                channel.sendMessage("pong").queue();
         }
     }
 
@@ -123,7 +123,7 @@ public class DTBot extends ListenerAdapter{
      * @return A random number up to the amount of sides on the passed in dice.
      */
     private int getDiceRoll(int diceSides) {
-        return new SecureRandom().nextInt(diceSides);
+        return new SecureRandom().nextInt(diceSides + 1);
     }
 
 }
