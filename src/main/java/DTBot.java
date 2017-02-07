@@ -1,6 +1,5 @@
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDABuilder;
-import net.dv8tion.jda.core.entities.Channel;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.MessageChannel;
@@ -15,6 +14,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.security.SecureRandom;
 
 /**
  * Discord Tabletop Bot
@@ -82,17 +82,48 @@ public class DTBot extends ListenerAdapter{
      */
     @Override
     public void onMessageReceived(MessageReceivedEvent event) {
+
+        // Message sent was not a command.
+        if(!event.getMessage().getContent().toLowerCase().startsWith("-"))
+            return;
+
+        MessageChannel channel = event.getChannel();
         Member member = event.getMember();
         Message message = event.getMessage();
-        String messageContent = message.getContent();
+        String command = message.getContent();
 
-        switch (messageContent.toLowerCase()) {
-            case "-ping":
-                event.getChannel().sendMessage("pong").queue();
+        // Each argument is the text after a space. commandArgs[0] == [command]
+        String[] commandArgs = command.split(" ");
+
+        switch (commandArgs[0].toLowerCase()) {
+            case "-dice":
+                if(command.length() > "-dice".length()) {
+
+                    // Contains only numbers and has at least one.
+                    if (commandArgs[1].matches("[0-9]+")) {
+                        try {
+                            int roll = getDiceRoll(Integer.parseInt(commandArgs[1]));
+                            channel.sendMessage("d" + commandArgs[1] + ": " + roll).queue();
+                        } catch (Exception e) {
+                            event.getChannel().sendMessage("That was not a valid number!").queue();
+                        }
+                    }
+                }
+                else
+                    channel.sendMessage("Usage: -dice [number]").queue();
                 break;
-            case "-pong":
-                event.getChannel().sendMessage("ping").queue();
+            case "-pong": // Test command.
+                channel.sendMessage("ping").queue();
         }
+    }
+
+    /**
+     * Returns a number within the amount of sides the passed in dice has.
+     * @param diceSides Number of sides on the dice.
+     * @return A random number up to the amount of sides on the passed in dice.
+     */
+    private int getDiceRoll(int diceSides) {
+        return new SecureRandom().nextInt(diceSides);
     }
 
 }
